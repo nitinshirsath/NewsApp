@@ -1,0 +1,71 @@
+package com.example.mynews.view.fragments
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.GridLayoutManager
+import com.example.mynews.R
+import com.example.mynews.adapters.NewsAdapter
+import com.example.mynews.databinding.FragmentAppleBinding
+import com.example.mynews.databinding.FragmentTeslaBinding
+import com.example.mynews.model.News
+import com.example.mynews.retrofit.APIService
+import com.example.mynews.retrofit.ServiceBuilder
+import com.example.mynews.viewModel.TeslaViewModel
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.time.LocalDate
+
+class TeslaFragment : Fragment() {
+    private lateinit var teslaViewModel: TeslaViewModel
+    private lateinit var dataBinding: FragmentTeslaBinding
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        teslaViewModel =
+            ViewModelProvider(this).get(TeslaViewModel::class.java)
+        dataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_tesla, container, false)
+        getTeslaNewsList();
+        return dataBinding.root
+    }
+
+    private fun getTeslaNewsList() {
+        val lastMonth = LocalDate.now().minusMonths(1)
+        dataBinding.progressBar.visibility = View.VISIBLE
+        val request = ServiceBuilder.buildService(APIService::class.java)
+        val call = request.getTeslaList(
+            "tesla",
+            lastMonth.toString(),
+            "publishedAt",
+            getString(R.string.news_api_key)
+        )
+
+        call.enqueue(object : Callback<News> {
+            override fun onResponse(call: Call<News>, response: Response<News>) {
+                if (response.isSuccessful) {
+                    dataBinding.progressBar.visibility = View.GONE
+                    dataBinding.rvTeslaList.apply {
+                        setHasFixedSize(true)
+                        layoutManager =
+                            GridLayoutManager(context, 1, GridLayoutManager.HORIZONTAL, false)
+                        adapter = NewsAdapter(response.body()!!.articles)
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<News>, t: Throwable) {
+                dataBinding.progressBar.visibility = View.GONE
+            }
+        })
+    }
+}

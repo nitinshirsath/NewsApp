@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MyNews</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="news_api_key">739de752b31b49828a87c58155d79082</string>
+</resources>
